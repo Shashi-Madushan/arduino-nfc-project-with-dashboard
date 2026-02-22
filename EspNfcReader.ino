@@ -127,10 +127,18 @@ void setup() {
 void loop() {
   server.handleClient();
 
+  // Update WiFi LED — but do NOT block NFC scanning on WiFi status.
+  // Reader mode will still read cards; it just won't POST if there is no
+  // endpoint configured.  Writer mode works entirely offline.
   if (WiFi.status() != WL_CONNECTED) {
     setLED(0, COL_RED);
-    connectToWiFi();
-    return;
+    // Attempt a reconnect only occasionally (every ~30 s) so we don't
+    // stall the loop with the 20-second blocking connect attempt.
+    static unsigned long lastReconnect = 0;
+    if (millis() - lastReconnect > 30000) {
+      lastReconnect = millis();
+      connectToWiFi();
+    }
   }
 
   if (strcmp(mode, "writer") == 0) {
@@ -174,9 +182,14 @@ void doReaderScan() {
   int httpCode = -1;
 
   if (strlen(endpoint) < 5) {
-    Serial.println("[Reader] No endpoint configured");
-    lastOpResult = "no-endpoint";
-    setLED(1, COL_RED);
+    // No backend configured — still give positive local feedback so you
+    // can verify read/write works before setting up the server.
+    Serial.println("[Reader] No endpoint — local read only");
+    lastOpResult = "read-only";
+    setLED(1, COL_BLUE);
+    setLED(2, COL_GREEN);
+    setLED(3, COL_GREEN);
+    beep(100);
   } else {
     bool isHttps = String(endpoint).startsWith("https");
 
@@ -385,16 +398,13 @@ void startAPMode() {
   Serial.print("[AP] SSID: ");  Serial.println(apName);
   Serial.print("[AP] IP:   ");  Serial.println(WiFi.softAPIP());
   setLED(0, COL_YELLOW);
-  setupWebServer();
+  // setupWebServer() is called once in setup() — don't call it here again
 }
 
 void fallbackToAPMode() {
   startAPMode();
-  // Stay in AP mode indefinitely so user can configure
-  while (true) {
-    server.handleClient();
-    delay(10);
-  }
+  // Return to main loop — server.handleClient() runs there continuously
+  // NFC read/write still works in AP mode so the device is fully functional
 }
 
 // =============================================================================
@@ -430,6 +440,7 @@ void handleRoot() {
   else if (lastOpResult == "unknown-card") resultHtml = "<span style='color:#d97706'>&#9888; Unknown card (404)</span>";
   else if (lastOpResult == "write-ok")     resultHtml = "<span style='color:#16a34a'>&#10003; Write OK</span>";
   else if (lastOpResult == "write-fail")   resultHtml = "<span style='color:#dc2626'>&#10007; Write failed</span>";
+  else if (lastOpResult == "read-only")    resultHtml = "<span style='color:#16a34a'>&#10003; Card read (no endpoint)</span>";
   else if (lastOpResult == "idle")         resultHtml = "<span style='color:#94a3b8'>-</span>";
   else                                     resultHtml = "<span style='color:#dc2626'>" + lastOpResult + "</span>";
 
