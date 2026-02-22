@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { CheckCircle2, Cpu } from "lucide-react";
 
 interface Device {
   _id: string;
@@ -107,8 +108,8 @@ export default function DevicesPage() {
         <div className="mb-6 bg-green-50 border border-green-200 rounded-xl p-5">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1">
-              <p className="text-sm font-semibold text-green-800 mb-1">
-                ✅ Device &ldquo;{newToken.name}&rdquo; created
+              <p className="text-sm font-semibold text-green-800 mb-1 flex items-center gap-1.5">
+                <CheckCircle2 size={16} /> Device &ldquo;{newToken.name}&rdquo; created
               </p>
               <p className="text-xs text-green-700 mb-3">
                 Copy this token now — it will <strong>not be shown again</strong>.
@@ -145,7 +146,9 @@ export default function DevicesPage() {
           <div className="py-16 text-center text-slate-400 text-sm">Loading…</div>
         ) : devices.length === 0 ? (
           <div className="py-16 text-center">
-            <div className="text-4xl mb-3">📡</div>
+            <div className="flex justify-center mb-3 text-slate-300">
+              <Cpu size={48} />
+            </div>
             <p className="text-sm text-slate-500 font-medium">No devices registered yet</p>
             <p className="text-xs text-slate-400 mt-1">
               Add a device to generate a token for your Arduino.
@@ -169,8 +172,8 @@ export default function DevicesPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <span className="inline-flex items-center justify-center w-7 h-7
-                                        bg-blue-100 text-blue-600 rounded-lg text-xs">
-                          📡
+                                        bg-blue-100 text-blue-600 rounded-lg">
+                          <Cpu size={14} />
                         </span>
                         <span className="font-medium text-slate-900">{d.name}</span>
                       </div>
@@ -180,7 +183,7 @@ export default function DevicesPage() {
                       {d.lastSeen ? (
                         <span className="inline-flex items-center gap-1 text-green-700
                                          bg-green-50 px-2 py-0.5 rounded-full text-xs">
-                          🟢 {formatRelative(d.lastSeen)}
+                          <span className="w-2 h-2 rounded-full bg-green-500" /> {formatRelative(d.lastSeen)}
                         </span>
                       ) : (
                         <span className="text-slate-400 text-xs">Never</span>

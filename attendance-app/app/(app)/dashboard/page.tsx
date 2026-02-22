@@ -3,6 +3,8 @@ import AttendanceLog from "@/lib/models/AttendanceLog";
 import Employee from "@/lib/models/Employee";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { Users, UserCheck, UserX, Cpu } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 interface LogEntry {
   _id: string;
@@ -59,11 +61,11 @@ export default async function DashboardPage() {
     weekday: "long", year: "numeric", month: "long", day: "numeric",
   });
 
-  const statCards = [
-    { label: "Total Employees",  value: stats.totalEmployees,  color: "bg-blue-50 text-blue-700",   icon: "👥" },
-    { label: "Present Today",    value: stats.presentToday,    color: "bg-green-50 text-green-700",  icon: "✅" },
-    { label: "Absent Today",     value: stats.absentToday,     color: "bg-red-50 text-red-700",      icon: "❌" },
-    { label: "Total Scans Today",value: stats.todayScans,      color: "bg-purple-50 text-purple-700",icon: "📡" },
+  const statCards: { label: string; value: number; color: string; Icon: LucideIcon }[] = [
+    { label: "Total Employees",  value: stats.totalEmployees,  color: "bg-blue-50 text-blue-700",   Icon: Users },
+    { label: "Present Today",    value: stats.presentToday,    color: "bg-green-50 text-green-700",  Icon: UserCheck },
+    { label: "Absent Today",     value: stats.absentToday,     color: "bg-red-50 text-red-700",      Icon: UserX },
+    { label: "Total Scans Today",value: stats.todayScans,      color: "bg-purple-50 text-purple-700",Icon: Cpu },
   ];
 
   return (
@@ -76,10 +78,10 @@ export default async function DashboardPage() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {statCards.map(({ label, value, color, icon }) => (
+        {statCards.map(({ label, value, color, Icon }) => (
           <div key={label} className="bg-white border border-slate-200 rounded-xl p-4">
-            <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl text-xl ${color} mb-3`}>
-              {icon}
+            <div className={`inline-flex items-center justify-center w-10 h-10 rounded-xl ${color} mb-3`}>
+              <Icon size={20} />
             </div>
             <div className="text-2xl font-bold text-slate-900">{value}</div>
             <div className="text-xs text-slate-500 mt-0.5">{label}</div>

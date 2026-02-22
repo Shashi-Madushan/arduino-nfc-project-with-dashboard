@@ -2,6 +2,7 @@
 
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { ClipboardList } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,8 +33,8 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Logo / title */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-600 text-white rounded-2xl text-2xl mb-4">
-            📋
+          <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-600 text-white rounded-2xl mb-4">
+            <ClipboardList size={28} />
           </div>
           <h1 className="text-2xl font-bold text-slate-900">Attendance System</h1>
           <p className="text-sm text-slate-500 mt-1">Sign in to your dashboard</p>

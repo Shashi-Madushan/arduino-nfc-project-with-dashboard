@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { Cpu } from "lucide-react";
 
 export default function SettingsPage() {
   const [copied, setCopied] = useState(false);
@@ -63,7 +64,7 @@ export default function SettingsPage() {
           </p>
           <div className="flex items-center gap-3 bg-blue-50 border border-blue-100
                           rounded-lg px-4 py-3">
-            <span className="text-xl">📡</span>
+            <span className="text-blue-600"><Cpu size={20} /></span>
             <div className="flex-1 text-xs text-blue-800">
               Tokens are now managed per-device in the{" "}
               <Link href="/devices" className="font-semibold underline underline-offset-2">
@@ -103,14 +104,31 @@ export default function SettingsPage() {
         <h2 className="font-semibold text-slate-800 mb-3">NeoPixel LED Reference</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
           {[
-            { led: "LED 0", desc: "WiFi",             bullets: ["🔵 Blue = connected", "🟢 Blinking green = connecting", "🔴 Red = failed"] },
-            { led: "LED 1", desc: "Mode / Status",    bullets: ["🔵 Blue = reader ready", "🟣 Purple = writer ready", "🔴 Red = HTTP error"] },
-            { led: "LED 2+3", desc: "Operation Result", bullets: ["🟢 Green = success (200/201)", "🟡 Yellow = unknown card (404)", "🔴 Red = error / idle"] },
+            { led: "LED 0", desc: "WiFi", bullets: [
+              { color: "bg-blue-500",  text: "Blue = connected" },
+              { color: "bg-green-500", text: "Blinking green = connecting" },
+              { color: "bg-red-500",   text: "Red = failed" },
+            ]},
+            { led: "LED 1", desc: "Mode / Status", bullets: [
+              { color: "bg-blue-500",   text: "Blue = reader ready" },
+              { color: "bg-purple-500", text: "Purple = writer ready" },
+              { color: "bg-red-500",    text: "Red = HTTP error" },
+            ]},
+            { led: "LED 2+3", desc: "Operation Result", bullets: [
+              { color: "bg-green-500",  text: "Green = success (200/201)" },
+              { color: "bg-yellow-400", text: "Yellow = unknown card (404)" },
+              { color: "bg-red-500",    text: "Red = error / idle" },
+            ]},
           ].map(({ led, desc, bullets }) => (
             <div key={led} className="bg-slate-50 rounded-lg p-3">
               <p className="font-semibold text-slate-700 mb-1">{led} — {desc}</p>
-              <ul className="space-y-0.5 text-slate-600">
-                {bullets.map((b) => <li key={b}>{b}</li>)}
+              <ul className="space-y-1 text-slate-600">
+                {bullets.map((b) => (
+                  <li key={b.text} className="flex items-center gap-1.5">
+                    <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${b.color}`} />
+                    {b.text}
+                  </li>
+                ))}
               </ul>
             </div>
           ))}

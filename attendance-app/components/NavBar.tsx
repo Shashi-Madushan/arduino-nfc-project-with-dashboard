@@ -3,13 +3,15 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import { LayoutDashboard, ClipboardList, Users, Cpu, Settings, LogOut } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
-const NAV = [
-  { href: "/dashboard",  label: "Dashboard",  icon: "📊" },
-  { href: "/attendance", label: "Attendance",  icon: "📋" },
-  { href: "/employees",  label: "Employees",   icon: "👥" },
-  { href: "/devices",    label: "Devices",     icon: "📡" },
-  { href: "/settings",   label: "Settings",    icon: "⚙️"  },
+const NAV: { href: string; label: string; Icon: LucideIcon }[] = [
+  { href: "/dashboard",  label: "Dashboard",  Icon: LayoutDashboard },
+  { href: "/attendance", label: "Attendance",  Icon: ClipboardList },
+  { href: "/employees",  label: "Employees",   Icon: Users },
+  { href: "/devices",    label: "Devices",     Icon: Cpu },
+  { href: "/settings",   label: "Settings",    Icon: Settings },
 ];
 
 export default function NavBar() {
@@ -33,7 +35,7 @@ export default function NavBar() {
 
       {/* Nav links */}
       <nav className="flex-1 px-3 py-4 space-y-1">
-        {NAV.map(({ href, label, icon }) => {
+        {NAV.map(({ href, label, Icon }) => {
           const active = pathname.startsWith(href);
           return (
             <Link
@@ -45,7 +47,7 @@ export default function NavBar() {
                   : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                 }`}
             >
-              <span className="text-base">{icon}</span>
+              <Icon size={18} />
               {label}
             </Link>
           );
@@ -60,7 +62,7 @@ export default function NavBar() {
           className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium
                      text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors"
         >
-          <span>🚪</span> {loggingOut ? "Signing out…" : "Sign out"}
+          <LogOut size={18} /> {loggingOut ? "Signing out…" : "Sign out"}
         </button>
       </div>
     </aside>
@@ -73,16 +75,16 @@ export function MobileNav() {
   return (
     <nav className="md:hidden flex items-center justify-around bg-white border-t border-slate-200
                     fixed bottom-0 left-0 right-0 z-10 h-14">
-      {NAV.map(({ href, icon }) => {
+      {NAV.map(({ href, Icon }) => {
         const active = pathname.startsWith(href);
         return (
           <Link
             key={href}
             href={href}
-            className={`flex items-center justify-center w-10 h-10 rounded-xl text-xl transition-colors
+            className={`flex items-center justify-center w-10 h-10 rounded-xl transition-colors
               ${active ? "bg-blue-50 text-blue-700" : "text-slate-500"}`}
           >
-            {icon}
+            <Icon size={20} />
           </Link>
         );
       })}
