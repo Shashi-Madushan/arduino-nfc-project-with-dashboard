@@ -54,12 +54,6 @@ export async function getSessionFromRequest(
   return verifySession(token);
 }
 
-// ─── Validate incoming device request (Bearer JWT) ───────────────────────────
-export async function validateDeviceToken(authHeader: string | null): Promise<boolean> {
-  if (!authHeader?.startsWith("Bearer ")) return false;
-  const token = authHeader.slice(7);
-  const deviceSecret = process.env.DEVICE_JWT_SECRET ?? "";
-  return token === deviceSecret;
-}
+
 
 export { SESSION_COOKIE };

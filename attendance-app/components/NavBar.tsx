@@ -8,6 +8,7 @@ const NAV = [
   { href: "/dashboard",  label: "Dashboard",  icon: "📊" },
   { href: "/attendance", label: "Attendance",  icon: "📋" },
   { href: "/employees",  label: "Employees",   icon: "👥" },
+  { href: "/devices",    label: "Devices",     icon: "📡" },
   { href: "/settings",   label: "Settings",    icon: "⚙️"  },
 ];
 

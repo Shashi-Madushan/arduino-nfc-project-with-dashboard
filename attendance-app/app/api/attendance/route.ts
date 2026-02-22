@@ -10,7 +10,8 @@
  */
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
-import { validateDeviceToken, getSession } from "@/lib/auth";
+import { validateDeviceToken } from "@/lib/device-auth";
+import { getSession } from "@/lib/auth";
 import Employee from "@/lib/models/Employee";
 import AttendanceLog from "@/lib/models/AttendanceLog";
 import { headers } from "next/headers";
@@ -19,8 +20,8 @@ import { headers } from "next/headers";
 export async function POST(req: Request) {
   const headersList = await headers();
   const authHeader = headersList.get("authorization");
-  const valid = await validateDeviceToken(authHeader);
-  if (!valid) {
+  const device = await validateDeviceToken(authHeader);
+  if (!device) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -31,8 +32,11 @@ export async function POST(req: Request) {
 
   const employeeId: string = String(body.employeeId).trim();
 
-  await connectDB();
+  // connectDB already called inside validateDeviceToken, safe to reuse
   const employee = await Employee.findOne({ employeeId });
+
+  // Update device lastSeen in background (don't await)
+  device.updateOne({ lastSeen: new Date() }).exec();
 
   if (!employee) {
     return NextResponse.json({ error: "Employee not found" }, { status: 404 });
