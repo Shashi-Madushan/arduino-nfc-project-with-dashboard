@@ -278,6 +278,8 @@ void doWriterScan() {
     beep(100);
     writerArmed = false;
     writePayload[0] = '\0';
+    // Switch back to reader mode automatically after writing
+    strncpy(mode, "reader", sizeof(mode));
     saveConfig();
   } else {
     Serial.println("[Writer] Write failed");
