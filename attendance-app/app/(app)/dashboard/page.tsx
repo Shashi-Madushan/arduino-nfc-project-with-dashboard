@@ -1,6 +1,6 @@
 import { connectDB } from "@/lib/db";
 import AttendanceLog from "@/lib/models/AttendanceLog";
-import Employee from "@/lib/models/Employee";
+import Student from "@/lib/models/Student";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { Users, UserCheck, UserX, Cpu } from "lucide-react";
@@ -8,14 +8,14 @@ import type { LucideIcon } from "lucide-react";
 
 interface LogEntry {
   _id: string;
-  employeeId: string;
-  employeeName: string;
-  department: string;
+  studentId: string;
+  studentName: string;
+  course: string;
   timestamp: string;
 }
 
 interface Stats {
-  totalEmployees: number;
+  totalStudents: number;
   presentToday: number;
   todayScans: number;
   absentToday: number;
@@ -28,26 +28,26 @@ async function getData(): Promise<{ stats: Stats; recentLogs: LogEntry[] }> {
   const end   = new Date(); end.setHours(23, 59, 59, 999);
   const filter = { timestamp: { $gte: start, $lte: end } };
 
-  const [totalEmployees, todayLogs, uniqueToday, recent] = await Promise.all([
-    Employee.countDocuments(),
+  const [totalStudents, todayLogs, uniqueToday, recent] = await Promise.all([
+    Student.countDocuments(),
     AttendanceLog.countDocuments(filter),
-    AttendanceLog.distinct("employeeId", filter),
+    AttendanceLog.distinct("studentId", filter),
     AttendanceLog.find(filter).sort({ timestamp: -1 }).limit(10).lean(),
   ]);
 
   return {
     stats: {
-      totalEmployees,
+      totalStudents,
       presentToday: uniqueToday.length,
       todayScans: todayLogs,
-      absentToday: Math.max(0, totalEmployees - uniqueToday.length),
+      absentToday: Math.max(0, totalStudents - uniqueToday.length),
     },
     recentLogs: recent.map((l) => ({
-      _id:          String(l._id),
-      employeeId:   l.employeeId,
-      employeeName: l.employeeName,
-      department:   l.department,
-      timestamp:    l.timestamp.toISOString(),
+      _id:         String(l._id),
+      studentId:   l.studentId,
+      studentName: l.studentName,
+      course:      l.course,
+      timestamp:   l.timestamp.toISOString(),
     })),
   };
 }
@@ -62,10 +62,10 @@ export default async function DashboardPage() {
   });
 
   const statCards: { label: string; value: number; color: string; Icon: LucideIcon }[] = [
-    { label: "Total Employees",  value: stats.totalEmployees,  color: "bg-blue-50 text-blue-700",   Icon: Users },
-    { label: "Present Today",    value: stats.presentToday,    color: "bg-green-50 text-green-700",  Icon: UserCheck },
-    { label: "Absent Today",     value: stats.absentToday,     color: "bg-red-50 text-red-700",      Icon: UserX },
-    { label: "Total Scans Today",value: stats.todayScans,      color: "bg-purple-50 text-purple-700",Icon: Cpu },
+    { label: "Total Students",   value: stats.totalStudents,  color: "bg-blue-50 text-blue-700",   Icon: Users },
+    { label: "Present Today",    value: stats.presentToday,   color: "bg-green-50 text-green-700",  Icon: UserCheck },
+    { label: "Absent Today",     value: stats.absentToday,    color: "bg-red-50 text-red-700",      Icon: UserX },
+    { label: "Total Scans Today",value: stats.todayScans,     color: "bg-purple-50 text-purple-700",Icon: Cpu },
   ];
 
   return (
@@ -94,8 +94,8 @@ export default async function DashboardPage() {
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-semibold text-slate-800">Today&apos;s Attendance Rate</h2>
           <span className="text-sm font-bold text-slate-700">
-            {stats.totalEmployees > 0
-              ? Math.round((stats.presentToday / stats.totalEmployees) * 100)
+            {stats.totalStudents > 0
+              ? Math.round((stats.presentToday / stats.totalStudents) * 100)
               : 0}%
           </span>
         </div>
@@ -103,8 +103,8 @@ export default async function DashboardPage() {
           <div
             className="h-full bg-green-500 rounded-full transition-all"
             style={{
-              width: stats.totalEmployees > 0
-                ? `${(stats.presentToday / stats.totalEmployees) * 100}%`
+              width: stats.totalStudents > 0
+                ? `${(stats.presentToday / stats.totalStudents) * 100}%`
                 : "0%",
             }}
           />
@@ -130,10 +130,10 @@ export default async function DashboardPage() {
             {recentLogs.map((log) => (
               <div key={log._id} className="flex items-center justify-between px-5 py-3">
                 <div>
-                  <p className="text-sm font-medium text-slate-900">{log.employeeName}</p>
+                  <p className="text-sm font-medium text-slate-900">{log.studentName}</p>
                   <p className="text-xs text-slate-400">
-                    {log.employeeId}
-                    {log.department ? ` · ${log.department}` : ""}
+                    {log.studentId}
+                    {log.course ? ` · ${log.course}` : ""}
                   </p>
                 </div>
                 <span className="text-xs text-slate-500 tabular-nums">

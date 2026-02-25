@@ -4,9 +4,9 @@ import { useEffect, useState, useCallback } from "react";
 
 interface Log {
   _id: string;
-  employeeId: string;
-  employeeName: string;
-  department: string;
+  studentId: string;
+  studentName: string;
+  course: string;
   timestamp: string;
   deviceIp: string;
   status: string;
@@ -32,7 +32,7 @@ export default function AttendancePage() {
       limit: String(LIMIT),
     });
     if (date)  params.set("date", date);
-    if (empId) params.set("employeeId", empId.trim());
+    if (empId) params.set("studentId", empId.trim());
 
     const res  = await fetch(`/api/attendance?${params}`);
     const data = await res.json();
@@ -67,7 +67,7 @@ export default function AttendancePage() {
         />
         <input
           type="text"
-          placeholder="Employee ID"
+          placeholder="Student ID"
           value={empId}
           onChange={(e) => setEmpId(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && applyFilter()}
@@ -99,9 +99,9 @@ export default function AttendancePage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50">
-                  <th className="text-left px-4 py-3 font-medium text-slate-500">Employee</th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500">Student</th>
                   <th className="text-left px-4 py-3 font-medium text-slate-500">ID</th>
-                  <th className="text-left px-4 py-3 font-medium text-slate-500">Department</th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500">Course</th>
                   <th className="text-left px-4 py-3 font-medium text-slate-500">Date</th>
                   <th className="text-left px-4 py-3 font-medium text-slate-500">Time</th>
                   <th className="text-left px-4 py-3 font-medium text-slate-500">Status</th>
@@ -112,13 +112,13 @@ export default function AttendancePage() {
                   const dt = new Date(log.timestamp);
                   return (
                     <tr key={log._id} className="hover:bg-slate-50">
-                      <td className="px-4 py-3 font-medium text-slate-900">{log.employeeName}</td>
+                      <td className="px-4 py-3 font-medium text-slate-900">{log.studentName}</td>
                       <td className="px-4 py-3">
                         <code className="bg-slate-100 px-1.5 py-0.5 rounded text-xs">
-                          {log.employeeId}
+                          {log.studentId}
                         </code>
                       </td>
-                      <td className="px-4 py-3 text-slate-500">{log.department || "—"}</td>
+                      <td className="px-4 py-3 text-slate-500">{log.course || "—"}</td>
                       <td className="px-4 py-3 text-slate-500 tabular-nums">
                         {dt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                       </td>

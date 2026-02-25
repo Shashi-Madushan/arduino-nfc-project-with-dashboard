@@ -1,11 +1,11 @@
 /**
- * GET    /api/employees/[id]   — get single employee by MongoDB _id
- * PUT    /api/employees/[id]   — update employee
- * DELETE /api/employees/[id]   — delete employee
+ * GET    /api/students/[id]   — get single student by MongoDB _id
+ * PUT    /api/students/[id]   — update student
+ * DELETE /api/students/[id]   — delete student
  */
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
-import Employee from "@/lib/models/Employee";
+import Student from "@/lib/models/Student";
 import { getSession } from "@/lib/auth";
 
 interface Params { params: Promise<{ id: string }> }
@@ -16,9 +16,9 @@ export async function GET(_req: Request, { params }: Params) {
 
   const { id } = await params;
   await connectDB();
-  const employee = await Employee.findById(id).lean();
-  if (!employee) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json({ employee });
+  const student = await Student.findById(id).lean();
+  if (!student) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  return NextResponse.json({ student });
 }
 
 export async function PUT(req: Request, { params }: Params) {
@@ -29,14 +29,14 @@ export async function PUT(req: Request, { params }: Params) {
   const body = await req.json().catch(() => null);
 
   await connectDB();
-  const employee = await Employee.findByIdAndUpdate(
+  const student = await Student.findByIdAndUpdate(
     id,
-    { $set: { name: body.name, email: body.email, department: body.department } },
+    { $set: { name: body.name, email: body.email, course: body.course } },
     { new: true, runValidators: true }
   ).lean();
 
-  if (!employee) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json({ employee });
+  if (!student) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  return NextResponse.json({ student });
 }
 
 export async function DELETE(_req: Request, { params }: Params) {
@@ -45,7 +45,7 @@ export async function DELETE(_req: Request, { params }: Params) {
 
   const { id } = await params;
   await connectDB();
-  const employee = await Employee.findByIdAndDelete(id);
-  if (!employee) return NextResponse.json({ error: "Not found" }, { status: 404 });
+  const student = await Student.findByIdAndDelete(id);
+  if (!student) return NextResponse.json({ error: "Not found" }, { status: 404 });
   return NextResponse.json({ ok: true });
 }

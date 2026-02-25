@@ -1,22 +1,21 @@
 /**
  * POST /api/attendance
- *   Body: { "employeeId": "EMP001" }
+ *   Body: { "studentId": "STU001" }
  *   Header: Authorization: Bearer <DEVICE_JWT_SECRET>
- *   Returns 201 on success, 404 if employee not found, 401 if bad token
+ *   Returns 201 on success, 404 if student not found, 401 if bad token
  *
  * GET /api/attendance
- *   Query: page, limit, date (YYYY-MM-DD), employeeId
+ *   Query: page, limit, date (YYYY-MM-DD), studentId
  *   Protected: session cookie required
  */
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import { validateDeviceToken } from "@/lib/device-auth";
 import { getSession } from "@/lib/auth";
-import Employee from "@/lib/models/Employee";
+import Student from "@/lib/models/Student";
 import AttendanceLog from "@/lib/models/AttendanceLog";
 import { headers } from "next/headers";
 
-// ── POST — called by the Arduino device ──────────────────────────────────────
 export async function POST(req: Request) {
   const headersList = await headers();
   const authHeader = headersList.get("authorization");
@@ -26,31 +25,28 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json().catch(() => null);
-  if (!body?.employeeId) {
-    return NextResponse.json({ error: "employeeId required" }, { status: 400 });
+  if (!body?.studentId) {
+    return NextResponse.json({ error: "studentId required" }, { status: 400 });
   }
 
-  const employeeId: string = String(body.employeeId).trim();
+  const studentId: string = String(body.studentId).trim();
+  const student = await Student.findOne({ studentId });
 
-  // connectDB already called inside validateDeviceToken, safe to reuse
-  const employee = await Employee.findOne({ employeeId });
-
-  // Update device lastSeen in background (don't await)
   device.updateOne({ lastSeen: new Date() }).exec();
 
-  if (!employee) {
-    return NextResponse.json({ error: "Employee not found" }, { status: 404 });
+  if (!student) {
+    return NextResponse.json({ error: "Student not found" }, { status: 404 });
   }
 
   const ip = headersList.get("x-forwarded-for") ?? headersList.get("x-real-ip") ?? "unknown";
 
   const log = await AttendanceLog.create({
-    employeeId:   employee.employeeId,
-    employeeName: employee.name,
-    department:   employee.department ?? "",
-    timestamp:    new Date(),
-    deviceIp:     ip,
-    status:       "present",
+    studentId:   student.studentId,
+    studentName: student.name,
+    course:      student.course ?? "",
+    timestamp:   new Date(),
+    deviceIp:    ip,
+    status:      "present",
   });
 
   return NextResponse.json(
@@ -59,7 +55,6 @@ export async function POST(req: Request) {
   );
 }
 
-// ── GET — dashboard queries ───────────────────────────────────────────────────
 export async function GET(req: Request) {
   const session = await getSession();
   if (!session) {
@@ -67,13 +62,13 @@ export async function GET(req: Request) {
   }
 
   const { searchParams } = new URL(req.url);
-  const page       = Math.max(1, parseInt(searchParams.get("page")  ?? "1"));
-  const limit      = Math.min(100, parseInt(searchParams.get("limit") ?? "50"));
-  const dateStr    = searchParams.get("date");
-  const employeeId = searchParams.get("employeeId");
+  const page      = Math.max(1, parseInt(searchParams.get("page")  ?? "1"));
+  const limit     = Math.min(100, parseInt(searchParams.get("limit") ?? "50"));
+  const dateStr   = searchParams.get("date");
+  const studentId = searchParams.get("studentId");
 
   const filter: Record<string, unknown> = {};
-  if (employeeId) filter.employeeId = employeeId;
+  if (studentId) filter.studentId = studentId;
 
   if (dateStr) {
     const start = new Date(dateStr);

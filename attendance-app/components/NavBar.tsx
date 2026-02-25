@@ -9,7 +9,7 @@ import type { LucideIcon } from "lucide-react";
 const NAV: { href: string; label: string; Icon: LucideIcon }[] = [
   { href: "/dashboard",  label: "Dashboard",  Icon: LayoutDashboard },
   { href: "/attendance", label: "Attendance",  Icon: ClipboardList },
-  { href: "/employees",  label: "Employees",   Icon: Users },
+  { href: "/students",   label: "Students",    Icon: Users },
   { href: "/devices",    label: "Devices",     Icon: Cpu },
   { href: "/settings",   label: "Settings",    Icon: Settings },
 ];

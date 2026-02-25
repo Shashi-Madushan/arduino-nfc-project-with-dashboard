@@ -1,9 +1,9 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 
 export interface IAttendanceLog extends Document {
-  employeeId: string;
-  employeeName: string;
-  department: string;
+  studentId: string;
+  studentName: string;
+  course: string;
   timestamp: Date;
   deviceIp: string;
   status: "present" | "unknown";
@@ -11,18 +11,18 @@ export interface IAttendanceLog extends Document {
 
 const AttendanceLogSchema = new Schema<IAttendanceLog>(
   {
-    employeeId:   { type: String, required: true, index: true },
-    employeeName: { type: String, default: "Unknown" },
-    department:   { type: String, default: "" },
-    timestamp:    { type: Date, default: () => new Date(), index: true },
-    deviceIp:     { type: String, default: "" },
-    status:       { type: String, enum: ["present", "unknown"], default: "present" },
+    studentId:   { type: String, required: true, index: true },
+    studentName: { type: String, default: "Unknown" },
+    course:      { type: String, default: "" },
+    timestamp:   { type: Date, default: () => new Date(), index: true },
+    deviceIp:    { type: String, default: "" },
+    status:      { type: String, enum: ["present", "unknown"], default: "present" },
   },
   { timestamps: false }
 );
 
-// Compound index for efficient date-range + employee queries
-AttendanceLogSchema.index({ timestamp: -1, employeeId: 1 });
+// Compound index for efficient date-range + student queries
+AttendanceLogSchema.index({ timestamp: -1, studentId: 1 });
 
 const AttendanceLog: Model<IAttendanceLog> =
   mongoose.models.AttendanceLog ??
