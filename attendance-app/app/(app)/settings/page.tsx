@@ -93,7 +93,7 @@ export default function SettingsPage() {
           <li>On first boot the device creates a hotspot: <strong>NFC-Attendance-Config</strong> (password: <code className="bg-slate-100 px-1 py-0.5 rounded text-xs">admin1234</code>).</li>
           <li>Connect to the hotspot and open <code className="bg-slate-100 px-1 py-0.5 rounded text-xs">192.168.4.1</code>.</li>
           <li>Paste the <strong>Endpoint URL</strong> (from above) and the <strong>Token</strong> into the form. Add your WiFi credentials and save.</li>
-          <li>Device restarts in <strong>Reader mode</strong>. Add employees on the <Link href="/employees" className="text-blue-600 hover:underline">Employees</Link> page.</li>
+          <li>Device restarts in <strong>Reader mode</strong>. Add students on the <Link href="/students" className="text-blue-600 hover:underline">Students</Link> page.</li>
           <li>To program a card: set device to <strong>Writer mode</strong> in the device config UI → open <code className="bg-slate-100 px-1 py-0.5 rounded text-xs">192.168.x.x/write</code> → tap a blank card.</li>
           <li>Switch back to <strong>Reader mode</strong> — tapping a programmed card logs attendance.</li>
         </ol>

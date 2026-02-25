@@ -6,7 +6,7 @@ const geist = Geist({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Attendance Management",
-  description: "NFC-based employee attendance system",
+  description: "NFC-based student attendance system",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
