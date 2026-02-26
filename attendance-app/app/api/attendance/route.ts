@@ -25,11 +25,12 @@ export async function POST(req: Request) {
   }
 
   const body = await req.json().catch(() => null);
-  if (!body?.studentId) {
+  // console.log(body)
+  if (!body?.employeeId) {
     return NextResponse.json({ error: "studentId required" }, { status: 400 });
   }
 
-  const studentId: string = String(body.studentId).trim();
+  const studentId: string = String(body.employeeId).trim();
   const student = await Student.findOne({ studentId });
 
   device.updateOne({ lastSeen: new Date() }).exec();
