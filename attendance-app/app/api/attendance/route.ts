@@ -52,22 +52,22 @@ export async function POST(req: Request) {
 
   // compute today's date and cutoff time
   const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const dateStr = getLocalDateStr(today);
-
+  const todayStr = getLocalDateStr();
+  
   const [cutHour, cutMin] = setting.orderCutoff.split(":").map((s: string) => parseInt(s, 10));
-  const cutoff = new Date(today.getFullYear(), today.getMonth(), today.getDate(), cutHour || 10, cutMin || 0, 0);
+  // Create cutoff time in local timezone (Sri Lanka +05:30)
+  const cutoff = new Date(todayStr + `T${String(cutHour || 10).padStart(2, '0')}:${String(cutMin || 0).padStart(2, '0')}:00+05:30`);
 
   let order;
   if (now <= cutoff) {
     // Before cutoff: mark as ordered (idempotent)
     order = await Order.findOneAndUpdate(
-      { employeeId: employee.employeeId, date: dateStr },
+      { employeeId: employee.employeeId, date: todayStr },
       {
         $setOnInsert: {
           employeeName: employee.name,
           department: employee.department ?? "",
-          date: dateStr,
+          date: todayStr,
         },
         $set: { deviceIp: ip },
       },
@@ -85,13 +85,13 @@ export async function POST(req: Request) {
   } else {
     // After cutoff: treat as collection (taken). Find existing order or create taken record.
     order = await Order.findOneAndUpdate(
-      { employeeId: employee.employeeId, date: dateStr },
+      { employeeId: employee.employeeId, date: todayStr },
       {
         $set: { takenAt: new Date(), status: "taken", deviceIp: ip },
         $setOnInsert: {
           employeeName: employee.name,
           department: employee.department ?? "",
-          date: dateStr,
+          date: todayStr,
           orderedAt: null,
         },
       },
