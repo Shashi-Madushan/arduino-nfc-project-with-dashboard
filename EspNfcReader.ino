@@ -132,13 +132,46 @@ void loop() {
   // endpoint configured.  Writer mode works entirely offline.
   if (WiFi.status() != WL_CONNECTED) {
     setLED(0, COL_RED);
-    // Attempt a reconnect only occasionally (every ~30 s) so we don't
-    // stall the loop with the 20-second blocking connect attempt.
+    // Attempt reconnection with retry limit before falling back to AP mode
     static unsigned long lastReconnect = 0;
-    if (millis() - lastReconnect > 30000) {
+    static bool reconnectInProgress = false;
+    static int reconnectAttempts = 0;
+    static const int MAX_RECONNECT_ATTEMPTS = 3;
+    
+    if (millis() - lastReconnect > 60000 && !reconnectInProgress) {
       lastReconnect = millis();
-      connectToWiFi();
+      reconnectInProgress = true;
+      reconnectAttempts++;
+      Serial.print("[WiFi] Reconnect attempt ");
+      Serial.print(reconnectAttempts);
+      Serial.print("/");
+      Serial.print(MAX_RECONNECT_ATTEMPTS);
+      Serial.println("...");
+      WiFi.begin(ssid, wifiPassword);
     }
+    
+    // Check if reconnection completed (successfully or failed)
+    if (reconnectInProgress) {
+      if (WiFi.status() == WL_CONNECTED) {
+        Serial.print("[WiFi] Reconnected, IP: ");
+        Serial.println(WiFi.localIP());
+        setLED(0, COL_BLUE);
+        reconnectInProgress = false;
+        reconnectAttempts = 0; // Reset counter on success
+      } else if (millis() - lastReconnect > 25000) { // Give it 25 seconds total
+        Serial.println("[WiFi] Reconnect failed");
+        reconnectInProgress = false;
+        
+        // Check if we've exceeded max attempts, then fallback to AP mode
+        if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+          Serial.println("[WiFi] Max reconnect attempts reached, falling back to AP mode");
+          reconnectAttempts = 0; // Reset for next cycle
+          fallbackToAPMode();
+        }
+      }
+    }
+  } else {
+    setLED(0, COL_BLUE);
   }
 
   if (strcmp(mode, "writer") == 0) {
