@@ -1,11 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Cpu } from "lucide-react";
 
 export default function SettingsPage() {
   const [copied, setCopied] = useState(false);
+  const [cutoff, setCutoff] = useState("10:00");
+  const [saving, setSaving] = useState(false);
+
+  // load existing setting
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/settings');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data?.setting?.orderCutoff) setCutoff(data.setting.orderCutoff);
+      } catch (e) {}
+    })();
+  }, []);
 
   const endpoint =
     typeof window !== "undefined"
@@ -32,7 +46,7 @@ export default function SettingsPage() {
           <p className="text-xs text-slate-500">
             Open <code className="bg-slate-100 px-1 py-0.5 rounded">192.168.4.1</code> when the
             device is in AP mode (hotspot:{" "}
-            <code className="bg-slate-100 px-1 py-0.5 rounded">NFC-Attendance-Config</code>) and
+            <code className="bg-slate-100 px-1 py-0.5 rounded">NFC-Canteen-Config</code>) and
             fill in the two values below.
           </p>
         </div>
@@ -84,18 +98,45 @@ export default function SettingsPage() {
         </div>
       </div>
 
+      {/* Canteen settings */}
+      <div className="bg-white border border-slate-200 rounded-xl divide-y divide-slate-100 mb-4">
+        <div className="px-5 py-4">
+          <h2 className="font-semibold text-slate-800 mb-1">Canteen Settings</h2>
+          <p className="text-xs text-slate-500">Set order cutoff time — taps before this time are recorded as orders, taps afterwards mark collection.</p>
+        </div>
+        <div className="px-5 py-4 flex items-center gap-3">
+          <input
+            type="time"
+            value={cutoff}
+            onChange={(e) => setCutoff(e.target.value)}
+            className="px-3 py-2 border border-slate-300 rounded-lg text-sm"
+          />
+          <button
+            onClick={async () => {
+              setSaving(true);
+              const res = await fetch('/api/settings', { method: 'POST', body: JSON.stringify({ orderCutoff: cutoff }), headers: { 'Content-Type': 'application/json' } });
+              if (!res.ok) alert('Failed to save');
+              setSaving(false);
+            }}
+            className="px-3 py-2 bg-blue-600 text-white text-xs rounded-lg"
+          >
+            {saving ? 'Saving...' : 'Save'}
+          </button>
+        </div>
+      </div>
+
       {/* Quick guide */}
       <div className="bg-white border border-slate-200 rounded-xl px-5 py-4 mb-4">
         <h2 className="font-semibold text-slate-800 mb-3">Quick Setup Guide</h2>
         <ol className="space-y-2 text-sm text-slate-600 list-decimal list-inside">
           <li>Flash <code className="bg-slate-100 px-1 py-0.5 rounded text-xs">EspNfcReader.ino</code> to the ESP8266 D1 Mini.</li>
           <li>Go to <Link href="/devices" className="text-blue-600 hover:underline">Devices</Link> → <strong>Add Device</strong> — copy the generated token (shown once only).</li>
-          <li>On first boot the device creates a hotspot: <strong>NFC-Attendance-Config</strong> (password: <code className="bg-slate-100 px-1 py-0.5 rounded text-xs">admin1234</code>).</li>
+          <li>On first boot the device creates a hotspot: <strong>NFC-Canteen-Config</strong> (password: <code className="bg-slate-100 px-1 py-0.5 rounded text-xs">admin1234</code>).</li>
           <li>Connect to the hotspot and open <code className="bg-slate-100 px-1 py-0.5 rounded text-xs">192.168.4.1</code>.</li>
           <li>Paste the <strong>Endpoint URL</strong> (from above) and the <strong>Token</strong> into the form. Add your WiFi credentials and save.</li>
           <li>Device restarts in <strong>Reader mode</strong>. Add employees on the <Link href="/employees" className="text-blue-600 hover:underline">Employees</Link> page.</li>
           <li>To program a card: set device to <strong>Writer mode</strong> in the device config UI → open <code className="bg-slate-100 px-1 py-0.5 rounded text-xs">192.168.x.x/write</code> → tap a blank card.</li>
-          <li>Switch back to <strong>Reader mode</strong> — tapping a programmed card logs attendance.</li>
+          <li>Switch back to <strong>Reader mode</strong> — tapping a programmed card records an order before cutoff, and marks collection after cutoff.</li>
         </ol>
       </div>
 

@@ -10,6 +10,9 @@ interface Log {
   timestamp: string;
   deviceIp: string;
   status: string;
+  date?: string;
+  orderedAt?: string;
+  takenAt?: string;
 }
 
 function todayStr() {
@@ -17,12 +20,12 @@ function todayStr() {
 }
 
 export default function AttendancePage() {
-  const [logs, setLogs]       = useState<Log[]>([]);
-  const [total, setTotal]     = useState(0);
-  const [page, setPage]       = useState(1);
+  const [logs, setLogs] = useState<Log[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [date, setDate]       = useState(todayStr());
-  const [empId, setEmpId]     = useState("");
+  const [date, setDate] = useState(todayStr());
+  const [empId, setEmpId] = useState("");
   const LIMIT = 30;
 
   const load = useCallback(async () => {
@@ -31,10 +34,9 @@ export default function AttendancePage() {
       page: String(page),
       limit: String(LIMIT),
     });
-    if (date)  params.set("date", date);
+    if (date) params.set("date", date);
     if (empId) params.set("employeeId", empId.trim());
-
-    const res  = await fetch(`/api/attendance?${params}`);
+    const res = await fetch(`/api/attendance?${params}`);
     const data = await res.json();
     setLogs(data.logs ?? []);
     setTotal(data.total ?? 0);
@@ -52,7 +54,7 @@ export default function AttendancePage() {
     <div className="p-6 max-w-5xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-900">Attendance Logs</h1>
+        <h1 className="text-2xl font-bold text-slate-900">Canteen Orders</h1>
         <p className="text-sm text-slate-500 mt-0.5">{total} records matching current filter</p>
       </div>
 
@@ -81,6 +83,26 @@ export default function AttendancePage() {
           Filter
         </button>
         <button
+          onClick={async () => {
+            // download PDF for selected month (YYYY-MM)
+            const m = date ? date.slice(0, 7) : new Date().toISOString().slice(0, 7);
+            const res = await fetch(`/api/report/monthly?month=${m}`);
+            if (!res.ok) return alert("Failed to generate PDF");
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `canteen-report-${m}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+          }}
+          className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700"
+        >
+          Download Month PDF
+        </button>
+        <button
           onClick={() => { setDate(todayStr()); setEmpId(""); setPage(1); }}
           className="px-4 py-2 border border-slate-300 text-sm font-medium rounded-lg hover:bg-slate-50"
         >
@@ -103,13 +125,15 @@ export default function AttendancePage() {
                   <th className="text-left px-4 py-3 font-medium text-slate-500">ID</th>
                   <th className="text-left px-4 py-3 font-medium text-slate-500">Department</th>
                   <th className="text-left px-4 py-3 font-medium text-slate-500">Date</th>
-                  <th className="text-left px-4 py-3 font-medium text-slate-500">Time</th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500">Ordered</th>
+                  <th className="text-left px-4 py-3 font-medium text-slate-500">Taken</th>
                   <th className="text-left px-4 py-3 font-medium text-slate-500">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {logs.map((log) => {
-                  const dt = new Date(log.timestamp);
+                  const ordered = log.orderedAt ? new Date(log.orderedAt) : null;
+                  const taken = log.takenAt ? new Date(log.takenAt) : null;
                   return (
                     <tr key={log._id} className="hover:bg-slate-50">
                       <td className="px-4 py-3 font-medium text-slate-900">{log.employeeName}</td>
@@ -120,14 +144,17 @@ export default function AttendancePage() {
                       </td>
                       <td className="px-4 py-3 text-slate-500">{log.department || "—"}</td>
                       <td className="px-4 py-3 text-slate-500 tabular-nums">
-                        {dt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                        {log.date}
                       </td>
                       <td className="px-4 py-3 text-slate-500 tabular-nums">
-                        {dt.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+                        {ordered ? ordered.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) : "—"}
+                      </td>
+                      <td className="px-4 py-3 text-slate-500 tabular-nums">
+                        {taken ? taken.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" }) : "—"}
                       </td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium
-                          ${log.status === "present"
+                          ${log.status === "taken"
                             ? "bg-green-100 text-green-700"
                             : "bg-yellow-100 text-yellow-700"
                           }`}>

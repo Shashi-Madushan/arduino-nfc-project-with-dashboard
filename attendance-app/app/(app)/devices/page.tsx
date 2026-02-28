@@ -57,7 +57,7 @@ export default function DevicesPage() {
   }
 
   async function handleDelete(device: Device) {
-    if (!confirm(`Revoke access for "${device.name}"? The device will no longer be able to submit attendance.`)) return;
+    if (!confirm(`Revoke access for "${device.name}"? The device will no longer be able to submit orders.`)) return;
     await fetch(`/api/devices/${device._id}`, { method: "DELETE" });
     load();
   }
@@ -215,7 +215,7 @@ export default function DevicesPage() {
           generated and stored in MongoDB. Copy it and paste into the Arduino config UI
           (<em>JWT Token</em> field). The device sends it as an{" "}
           <code className="bg-blue-100 px-1 rounded">Authorization: Bearer …</code> header on
-          every card scan. Revoking a device immediately prevents it from logging attendance.
+          every card scan. Revoking a device immediately prevents it from logging orders.
         </p>
       </div>
 

@@ -8,7 +8,7 @@ import type { LucideIcon } from "lucide-react";
 
 const NAV: { href: string; label: string; Icon: LucideIcon }[] = [
   { href: "/dashboard",  label: "Dashboard",  Icon: LayoutDashboard },
-  { href: "/attendance", label: "Attendance",  Icon: ClipboardList },
+  { href: "/attendance", label: "Orders",     Icon: ClipboardList },
   { href: "/employees",  label: "Employees",   Icon: Users },
   { href: "/devices",    label: "Devices",     Icon: Cpu },
   { href: "/settings",   label: "Settings",    Icon: Settings },
@@ -29,8 +29,8 @@ export default function NavBar() {
     <aside className="hidden md:flex flex-col w-56 min-h-screen bg-white border-r border-slate-200 fixed top-0 left-0">
       {/* Brand */}
       <div className="px-5 py-5 border-b border-slate-100">
-        <span className="text-lg font-bold text-slate-900">Attendance</span>
-        <p className="text-xs text-slate-400 mt-0.5">Management System</p>
+        <span className="text-lg font-bold text-slate-900">Canteen</span>
+        <p className="text-xs text-slate-400 mt-0.5">Orders Management</p>
       </div>
 
       {/* Nav links */}

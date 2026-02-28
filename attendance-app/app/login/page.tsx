@@ -36,7 +36,7 @@ export default function LoginPage() {
           <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-600 text-white rounded-2xl mb-4">
             <ClipboardList size={28} />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900">Attendance System</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Canteen Orders</h1>
           <p className="text-sm text-slate-500 mt-1">Sign in to your dashboard</p>
         </div>
 
@@ -92,7 +92,7 @@ export default function LoginPage() {
         </div>
 
         <p className="text-center text-xs text-slate-400 mt-6">
-          NFC Attendance Management System
+          NFC Canteen Ordering System
         </p>
       </div>
     </div>

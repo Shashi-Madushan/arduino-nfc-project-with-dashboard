@@ -1,5 +1,5 @@
 import { connectDB } from "@/lib/db";
-import AttendanceLog from "@/lib/models/AttendanceLog";
+import Order from "@/lib/models/Order";
 import Employee from "@/lib/models/Employee";
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -23,31 +23,33 @@ interface Stats {
 
 async function getData(): Promise<{ stats: Stats; recentLogs: LogEntry[] }> {
   await connectDB();
-
   const start = new Date(); start.setHours(0, 0, 0, 0);
   const end   = new Date(); end.setHours(23, 59, 59, 999);
-  const filter = { timestamp: { $gte: start, $lte: end } };
 
-  const [totalEmployees, todayLogs, uniqueToday, recent] = await Promise.all([
+  // Use Order model for canteen stats
+  const todayStr = start.toISOString().slice(0, 10);
+
+  const [totalEmployees, ordersToday, uniqueOrderedToday, takenToday, recent] = await Promise.all([
     Employee.countDocuments(),
-    AttendanceLog.countDocuments(filter),
-    AttendanceLog.distinct("employeeId", filter),
-    AttendanceLog.find(filter).sort({ timestamp: -1 }).limit(10).lean(),
+    Order.countDocuments({ date: todayStr }),
+    Order.distinct("employeeId", { date: todayStr, orderedAt: { $ne: null } }),
+    Order.countDocuments({ date: todayStr, takenAt: { $ne: null } }),
+    Order.find({ date: todayStr }).sort({ updatedAt: -1 }).limit(10).lean(),
   ]);
 
   return {
     stats: {
       totalEmployees,
-      presentToday: uniqueToday.length,
-      todayScans: todayLogs,
-      absentToday: Math.max(0, totalEmployees - uniqueToday.length),
+      presentToday: Array.isArray(uniqueOrderedToday) ? uniqueOrderedToday.length : 0,
+      todayScans: ordersToday,
+      absentToday: Math.max(0, totalEmployees - (Array.isArray(uniqueOrderedToday) ? uniqueOrderedToday.length : 0)),
     },
     recentLogs: recent.map((l) => ({
       _id:          String(l._id),
       employeeId:   l.employeeId,
       employeeName: l.employeeName,
-      department:   l.department,
-      timestamp:    l.timestamp.toISOString(),
+      department:   l.department ?? "",
+      timestamp:    ((l.takenAt ?? l.orderedAt ?? l.createdAt) as Date | undefined)?.toISOString() ?? "",
     })),
   };
 }
@@ -92,7 +94,7 @@ export default async function DashboardPage() {
       {/* Attendance rate bar */}
       <div className="bg-white border border-slate-200 rounded-xl p-5 mb-6">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-semibold text-slate-800">Today&apos;s Attendance Rate</h2>
+          <h2 className="font-semibold text-slate-800">Today&apos;s Order Rate</h2>
           <span className="text-sm font-bold text-slate-700">
             {stats.totalEmployees > 0
               ? Math.round((stats.presentToday / stats.totalEmployees) * 100)
@@ -118,7 +120,7 @@ export default async function DashboardPage() {
       {/* Recent scans */}
       <div className="bg-white border border-slate-200 rounded-xl">
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-          <h2 className="font-semibold text-slate-800">Recent Scans Today</h2>
+          <h2 className="font-semibold text-slate-800">Recent Orders / Collections</h2>
           <a href="/attendance" className="text-sm text-blue-600 hover:underline">View all</a>
         </div>
         {recentLogs.length === 0 ? (

@@ -80,7 +80,7 @@ export default function EmployeesPage() {
   }
 
   async function handleDelete(emp: Employee) {
-    if (!confirm(`Delete ${emp.name}? This will not remove their attendance history.`)) return;
+    if (!confirm(`Delete ${emp.name}? This will not remove their order history.`)) return;
     await fetch(`/api/employees/${emp._id}`, { method: "DELETE" });
     load();
   }
