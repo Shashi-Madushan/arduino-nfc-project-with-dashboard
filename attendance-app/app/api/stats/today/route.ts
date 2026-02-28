@@ -4,13 +4,17 @@ import { connectDB } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import AttendanceLog from "@/lib/models/AttendanceLog";
 import Employee from "@/lib/models/Employee";
+import { getLocalDateStr } from "@/lib/date";
 
 export async function GET() {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const start = new Date(); start.setHours(0, 0, 0, 0);
-  const end   = new Date(); end.setHours(23, 59, 59, 999);
+  // Create proper date range for local timezone
+  const today = new Date();
+  const todayStr = getLocalDateStr(today);
+  const start = new Date(todayStr + "T00:00:00.000+05:30"); // Sri Lanka timezone
+  const end = new Date(todayStr + "T23:59:59.999+05:30");
 
   await connectDB();
   const [totalEmployees, todayLogs, uniqueToday] = await Promise.all([

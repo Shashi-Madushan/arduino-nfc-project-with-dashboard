@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { getLocalDateStr } from "@/lib/date";
 
 interface Log {
   _id: string;
@@ -15,16 +16,12 @@ interface Log {
   takenAt?: string;
 }
 
-function todayStr() {
-  return new Date().toISOString().slice(0, 10);
-}
-
 export default function AttendancePage() {
   const [logs, setLogs] = useState<Log[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [date, setDate] = useState(todayStr());
+  const [date, setDate] = useState(getLocalDateStr());
   const [empId, setEmpId] = useState("");
   const LIMIT = 30;
 
@@ -85,7 +82,7 @@ export default function AttendancePage() {
         <button
           onClick={async () => {
             // download PDF for selected month (YYYY-MM)
-            const m = date ? date.slice(0, 7) : new Date().toISOString().slice(0, 7);
+            const m = date ? date.slice(0, 7) : getLocalDateStr().slice(0, 7);
             const res = await fetch(`/api/report/monthly?month=${m}`);
             if (!res.ok) return alert("Failed to generate PDF");
             const blob = await res.blob();
@@ -103,7 +100,7 @@ export default function AttendancePage() {
           Download Month PDF
         </button>
         <button
-          onClick={() => { setDate(todayStr()); setEmpId(""); setPage(1); }}
+          onClick={() => { setDate(getLocalDateStr()); setEmpId(""); setPage(1); }}
           className="px-4 py-2 border border-slate-300 text-sm font-medium rounded-lg hover:bg-slate-50"
         >
           Reset

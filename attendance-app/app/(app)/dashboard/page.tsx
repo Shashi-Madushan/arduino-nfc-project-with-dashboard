@@ -21,13 +21,13 @@ interface Stats {
   absentToday: number;
 }
 
+import { getLocalDateStr } from "@/lib/date";
+
 async function getData(): Promise<{ stats: Stats; recentLogs: LogEntry[] }> {
   await connectDB();
-  const start = new Date(); start.setHours(0, 0, 0, 0);
-  const end   = new Date(); end.setHours(23, 59, 59, 999);
-
+  
   // Use Order model for canteen stats
-  const todayStr = start.toISOString().slice(0, 10);
+  const todayStr = getLocalDateStr();
 
   const [totalEmployees, ordersToday, uniqueOrderedToday, takenToday, recent] = await Promise.all([
     Employee.countDocuments(),
@@ -45,11 +45,11 @@ async function getData(): Promise<{ stats: Stats; recentLogs: LogEntry[] }> {
       absentToday: Math.max(0, totalEmployees - (Array.isArray(uniqueOrderedToday) ? uniqueOrderedToday.length : 0)),
     },
     recentLogs: recent.map((l) => ({
-      _id:          String(l._id),
-      employeeId:   l.employeeId,
+      _id: String(l._id),
+      employeeId: l.employeeId,
       employeeName: l.employeeName,
-      department:   l.department ?? "",
-      timestamp:    ((l.takenAt ?? l.orderedAt ?? l.createdAt) as Date | undefined)?.toISOString() ?? "",
+      department: l.department ?? "",
+      timestamp: ((l.takenAt ?? l.orderedAt ?? l.createdAt) as Date | undefined)?.toISOString() ?? "",
     })),
   };
 }
@@ -64,10 +64,10 @@ export default async function DashboardPage() {
   });
 
   const statCards: { label: string; value: number; color: string; Icon: LucideIcon }[] = [
-    { label: "Total Employees",  value: stats.totalEmployees,  color: "bg-blue-50 text-blue-700",   Icon: Users },
-    { label: "Present Today",    value: stats.presentToday,    color: "bg-green-50 text-green-700",  Icon: UserCheck },
-    { label: "Absent Today",     value: stats.absentToday,     color: "bg-red-50 text-red-700",      Icon: UserX },
-    { label: "Total Scans Today",value: stats.todayScans,      color: "bg-purple-50 text-purple-700",Icon: Cpu },
+    { label: "Total Employees", value: stats.totalEmployees, color: "bg-blue-50 text-blue-700", Icon: Users },
+    { label: "Present Today", value: stats.presentToday, color: "bg-green-50 text-green-700", Icon: UserCheck },
+    { label: "Absent Today", value: stats.absentToday, color: "bg-red-50 text-red-700", Icon: UserX },
+    { label: "Total Scans Today", value: stats.todayScans, color: "bg-purple-50 text-purple-700", Icon: Cpu },
   ];
 
   return (

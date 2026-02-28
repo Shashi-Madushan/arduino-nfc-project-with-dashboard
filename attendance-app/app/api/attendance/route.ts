@@ -16,6 +16,7 @@ import Employee from "@/lib/models/Employee";
 import Order from "@/lib/models/Order";
 import Setting from "@/lib/models/Setting";
 import { headers } from "next/headers";
+import { getLocalDateStr } from "@/lib/date";
 
 // ── POST — called by the Arduino device ──────────────────────────────────────
 export async function POST(req: Request) {
@@ -52,7 +53,7 @@ export async function POST(req: Request) {
   // compute today's date and cutoff time
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const dateStr = today.toISOString().slice(0, 10);
+  const dateStr = getLocalDateStr(today);
 
   const [cutHour, cutMin] = setting.orderCutoff.split(":").map((s: string) => parseInt(s, 10));
   const cutoff = new Date(today.getFullYear(), today.getMonth(), today.getDate(), cutHour || 10, cutMin || 0, 0);
@@ -109,9 +110,9 @@ export async function GET(req: Request) {
   }
 
   const { searchParams } = new URL(req.url);
-  const page       = Math.max(1, parseInt(searchParams.get("page")  ?? "1"));
-  const limit      = Math.min(100, parseInt(searchParams.get("limit") ?? "50"));
-  const dateStr    = searchParams.get("date");
+  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1"));
+  const limit = Math.min(100, parseInt(searchParams.get("limit") ?? "50"));
+  const dateStr = searchParams.get("date");
   const employeeId = searchParams.get("employeeId");
 
   const filter: Record<string, unknown> = {};
